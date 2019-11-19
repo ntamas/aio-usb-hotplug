@@ -12,7 +12,13 @@ requires = [
 ]
 
 extras_require = {
-    "dev": ["curio>=0.9", "pytest>=5.2.4", "pytest-cov>=2.0.1", "trio>=0.13.0"]
+    "dev": [
+        "curio>=0.9",
+        "pytest>=5.2.4",
+        "pytest-cov>=2.0.1",
+        "trio>=0.13.0",
+        "twine>=3.0.0",
+    ]
 }
 
 this_directory = abspath(dirname(__file__))
