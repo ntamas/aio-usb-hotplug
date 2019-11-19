@@ -17,7 +17,7 @@ extras_require = {
         "pytest>=5.2.4",
         "pytest-cov>=2.0.1",
         "trio>=0.13.0",
-        "twine>=3.0.0",
+        "twine",
     ]
 }
 
