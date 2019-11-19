@@ -1,12 +1,12 @@
 """Hotplug detector for USB devices."""
 
-from anyio import create_event
+from anyio import create_event, create_task_group, open_cancel_scope
 from async_generator import asynccontextmanager, async_generator, yield_
 from collections import namedtuple
 from enum import Enum
-from typing import Callable, Dict, Iterator, Optional, Union
+from typing import Callable, Coroutine, Dict, Iterator, Optional, Union
 
-from .backends.base import USBBusScannerBackend
+from .backends.base import Device, USBBusScannerBackend
 from .backends.autodetect import choose_backend
 
 
@@ -115,9 +115,7 @@ class HotplugDetector:
 
         while True:
             if self._suspended:
-                print("Waiting because we are suspended")
                 await self._resume_event.wait()
-                print("Released from suspend")
 
             devices = await backend.scan()
 
@@ -166,14 +164,68 @@ class HotplugDetector:
     async def resume(self) -> None:
         """Resumes the hotplug detector task after a suspension."""
         self._suspended -= 1
-        print("--- _suspended = ", self._suspended)
         if not self._suspended and self._resume_event:
             await self._resume_event.set()
+
+    async def run_for_each_device(
+        self,
+        task: Callable[[Device], Coroutine],
+        *,
+        predicate: Optional[Callable[[Device], bool]] = None,
+        cancellable: bool = True
+    ) -> None:
+        """Runs a background task that listens for hotplug events and runs an
+        asynchronous task for each device that was added to the USB bus.
+
+        Parameters:
+            task: the task to run for each matched device
+            predicate: an optional predicate to evaluate for each device. When
+                the predicate returns `False`, no task will be spawned for the
+                matched device.
+            cancellable: whether to cancel tasks corresponding to devices that
+                were removed
+        """
+        predicate = predicate or (lambda _: True)
+        cancel_scopes_by_key = {}
+
+        async with create_task_group() as tasks:
+            if cancellable:
+
+                async def _task_wrapper(event):
+                    """Wrapper for the task object that clears its cancel scope from the
+                    resulting dictionary when the task terminates.
+                    """
+                    async with open_cancel_scope() as scope:
+                        cancel_scopes_by_key[event.key] = scope
+                        try:
+                            await task(event.device)
+                        finally:
+                            del cancel_scopes_by_key[event.key]
+
+            else:
+
+                async def _task_wrapper(event):
+                    """Wrapper for the task object that clears its cancel scope from the
+                    resulting dictionary when the task terminates.
+                    """
+                    cancel_scopes_by_key[event.key] = None
+                    try:
+                        await task(event.device)
+                    finally:
+                        del cancel_scopes_by_key[event.key]
+
+            async for event in self.events():
+                if event.type == HotplugEventType.ADDED and predicate(event.device):
+                    if event.key not in cancel_scopes_by_key:
+                        await tasks.spawn(_task_wrapper, event)
+                elif event.type == HotplugEventType.REMOVED:
+                    cancel_scope = cancel_scopes_by_key.get(event.key)
+                    if cancel_scope:
+                        await cancel_scope.cancel()
 
     def suspend(self) -> None:
         """Temporarily suspends the hotplug detector."""
         self._suspended += 1
-        print("+++ _suspended = ", self._suspended)
         if self._suspended and not self._resume_event:
             self._resume_event = create_event()
 

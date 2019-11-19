@@ -5,7 +5,7 @@ yielding detected hotplug events on the USB buses.
 
 Requires Python >= 3.5.
 
-Works with [`asyncio`](https://docs.python.org/3/library/asyncio.html), 
+Works with [`asyncio`](https://docs.python.org/3/library/asyncio.html),
 [`curio`](https://curio.readthedocs.io/en/latest/) and
 [`trio`](https://trio.readthedocs.io/en/stable/).
 
@@ -20,15 +20,44 @@ pip install aio-usb-hotplug
 
 ## Usage
 
+### Dump all hotplug events related to a specific USB device
+
 ```python
 from aio_usb_hotplug import HotplugDetector
 from trio import run  # ...or asyncio, or curio
 
 async def dump_events():
-    async for event in HotplugDetector.for_device(vid="1050", pid="0407"):
+    detector = HotplugDetector.for_device(vid="1050", pid="0407")
+    async for event in detector.events():
         print(repr(event))
 
 trio.run(dump_events)
+```
+
+### Run an async task for each USB device matching a VID/PID pair
+
+```python
+from aio_usb_hotplug import HotplugDetector
+from trio import sleep_forever
+
+
+async def handle_device(device):
+    print("Handling device:", repr(device))
+    try:
+        # Do something meaningful with the device. The task gets cancelled
+        # when the device is unplugged.
+        await sleep_forever()
+    finally:
+        # Device unplugged or an exception happened
+        print("Stopped handling device:", repr(device))
+
+
+async def handle_detected_devices():
+    detector = HotplugDetector.for_device(vid="1050", pid="0407")
+    await detector.run_for_each_device(handle_device)
+
+
+trio.run(handle_detected_devices)
 ```
 
 ## Contributing

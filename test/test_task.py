@@ -1,6 +1,13 @@
 from aio_usb_hotplug import HotplugDetector
 from aio_usb_hotplug.backends.base import USBBusScannerBackend
-from anyio import create_task_group, open_cancel_scope, move_on_after, sleep
+from anyio import (
+    create_event,
+    create_task_group,
+    open_cancel_scope,
+    move_on_after,
+    sleep,
+)
+from collections import defaultdict
 from pytest import fixture, mark
 from typing import List
 
@@ -194,6 +201,94 @@ async def test_removed_device_generator(backend, events):
             await tg.spawn(scenario, scope.cancel)
             async for device in scanner.removed_devices():
                 events.add(device)
+
+
+@mark.anyio
+async def test_run_for_each_device(backend):
+    scanner = HotplugDetector(backend=backend)
+    counters = defaultdict(int)
+
+    async def handler(device):
+        counters[device] += 1
+        try:
+            while True:
+                await sleep(1000)
+        finally:
+            counters[device] -= 1
+
+    async def scenario(end):
+        backend.add("foo")
+        await sleep(0.003)
+        assert counters == {"foo": 1}
+
+        backend.add("bar")
+        backend.add("bar")
+        backend.add("bar")
+        await sleep(0.003)
+        assert counters == {"foo": 1, "bar": 1}
+
+        backend.remove("bar")
+        backend.add("baz")
+        await sleep(0.003)
+        assert counters == {"foo": 1, "bar": 0, "baz": 1}
+
+        backend.remove("foo")
+        backend.remove("baz")
+        await sleep(0.003)
+        assert counters == {"foo": 0, "bar": 0, "baz": 0}
+
+        await end()
+
+    async with create_task_group() as tg:
+        async with open_cancel_scope() as scope:
+            await tg.spawn(scenario, scope.cancel)
+            await scanner.run_for_each_device(handler)
+
+
+@mark.anyio
+async def test_run_for_each_device_non_cancellable(backend):
+    scanner = HotplugDetector(backend=backend)
+    counters = defaultdict(int)
+    stopped = create_event()
+
+    async def handler(device):
+        counters[device] += 1
+        try:
+            await stopped.wait()
+        finally:
+            counters[device] -= 1
+
+    async def scenario(end):
+        backend.add("foo")
+        await sleep(0.003)
+        assert counters == {"foo": 1}
+
+        backend.add("bar")
+        backend.add("bar")
+        backend.add("bar")
+        await sleep(0.003)
+        assert counters == {"foo": 1, "bar": 1}
+
+        backend.remove("bar")
+        backend.add("baz")
+        await sleep(0.003)
+        assert counters == {"foo": 1, "bar": 1, "baz": 1}
+
+        backend.remove("foo")
+        backend.remove("baz")
+        await sleep(0.003)
+        assert counters == {"foo": 1, "bar": 1, "baz": 1}
+
+        await stopped.set()
+
+        await sleep(0.003)
+        assert counters == {"foo": 0, "bar": 0, "baz": 0}
+        await end()
+
+    async with create_task_group() as tg:
+        async with open_cancel_scope() as scope:
+            await tg.spawn(scenario, scope.cancel)
+            await scanner.run_for_each_device(handler, cancellable=False)
 
 
 @mark.anyio
