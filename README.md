@@ -22,9 +22,13 @@ pip install aio-usb-hotplug
 
 ```python
 from aio_usb_hotplug import HotplugDetector
+from trio import run  # ...or asyncio, or curio
 
-for event in HotplugDetector.for_device(vid="1050", pid="0407"):
-    print(repr(event))
+async def dump_events():
+    async for event in HotplugDetector.for_device(vid="1050", pid="0407"):
+        print(repr(event))
+
+trio.run(dump_events)
 ```
 
 ## Contributing
