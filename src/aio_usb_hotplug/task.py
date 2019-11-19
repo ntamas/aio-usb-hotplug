@@ -89,6 +89,7 @@ class HotplugDetector:
         self._suspended = 0
         self._resume_event = None
 
+    @async_generator
     async def run(self) -> Iterator[HotplugEvent]:
         """Runs the hotplug detection in an infinite loop, waiting between the
         given number of seconds between scans.
@@ -129,13 +130,17 @@ class HotplugDetector:
 
             for device in removed:
                 key = key_of(device)
-                yield HotplugEvent(
+                event = HotplugEvent(
                     type=HotplugEventType.REMOVED, device=device, key=key
                 )
+                await yield_(event)
 
             for device in added.values():
-                key_of(device)
-                yield HotplugEvent(type=HotplugEventType.ADDED, device=device, key=key)
+                key = key_of(device)
+                event = HotplugEvent(
+                    type=HotplugEventType.ADDED, device=device, key=key
+                )
+                await yield_(event)
 
             await backend.wait_until_next_scan()
 
