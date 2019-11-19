@@ -90,13 +90,20 @@ class HotplugDetector:
         self._resume_event = None
 
     @async_generator
-    async def events(self) -> Iterator[HotplugEvent]:
-        """Runs the hotplug detection in an infinite loop, waiting between the
-        given number of seconds between scans.
+    async def added_devices(self) -> Iterator[HotplugEvent]:
+        """Runs the hotplug detection in an asynchronous task.
 
-        Note that the actual detection is executed in a worker thread in order
-        not to block the main event loop of the application. Signals are
-        dispatched in the same thread that runs the event loop.
+        Yields:
+            Device: device objects, one for each device whose addition was
+                detected. Removed devices are not reported.
+        """
+        async for event in self.events():
+            if event.type == HotplugEventType.ADDED:
+                await yield_(event.device)
+
+    @async_generator
+    async def events(self) -> Iterator[HotplugEvent]:
+        """Runs the hotplug detection in an asynchronous task.
 
         Yields:
             HotplugEvent: event objects describing the devices that were added
@@ -143,6 +150,18 @@ class HotplugDetector:
                 await yield_(event)
 
             await backend.wait_until_next_scan()
+
+    @async_generator
+    async def removed_devices(self) -> Iterator[HotplugEvent]:
+        """Runs the hotplug detection in an asynchronous task.
+
+        Yields:
+            Device: device objects, one for each device whose removal was
+                detected. Added devices are not reported.
+        """
+        async for event in self.events():
+            if event.type == HotplugEventType.REMOVED:
+                await yield_(event.device)
 
     async def resume(self) -> None:
         """Resumes the hotplug detector task after a suspension."""

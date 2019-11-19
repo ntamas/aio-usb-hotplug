@@ -25,11 +25,11 @@ class MockBackend(USBBusScannerBackend):
         self._devices.remove(device)
 
     async def scan(self) -> List[str]:
-        await sleep(0.01)
+        await sleep(0.001)
         return sorted(self._devices)
 
     async def wait_until_next_scan(self) -> None:
-        await sleep(0.01)
+        await sleep(0.001)
 
 
 @fixture
@@ -60,23 +60,23 @@ async def test_event_generator(backend, events):
 
     async def scenario(end):
         backend.add("foo")
-        await sleep(0.03)
+        await sleep(0.003)
         assert events.get() == [("added", "foo")]
 
         backend.add("bar")
         backend.add("bar")
         backend.add("bar")
-        await sleep(0.03)
+        await sleep(0.003)
         assert events.get() == [("added", "bar")]
 
         backend.remove("bar")
         backend.add("baz")
-        await sleep(0.03)
+        await sleep(0.003)
         assert sorted(events.get()) == [("added", "baz"), ("removed", "bar")]
 
         backend.remove("foo")
         backend.remove("baz")
-        await sleep(0.03)
+        await sleep(0.003)
         assert sorted(events.get()) == [("removed", "baz"), ("removed", "foo")]
 
         await end()
@@ -94,29 +94,29 @@ async def test_event_generator_suspension(backend, events):
 
     async def scenario(end):
         async with scanner.suspended():
-            await sleep(0.03)
+            await sleep(0.003)
 
             backend.add("foo")
-            await sleep(0.03)
+            await sleep(0.003)
             assert events.get() == []
 
             backend.add("bar")
             backend.add("bar")
             backend.add("bar")
-            await sleep(0.03)
+            await sleep(0.003)
             assert events.get() == []
 
             backend.remove("bar")
             backend.add("baz")
-            await sleep(0.03)
+            await sleep(0.003)
             assert events.get() == []
 
-        await sleep(0.03)
+        await sleep(0.003)
         assert sorted(events.get()) == [("added", "baz"), ("added", "foo")]
 
         backend.remove("foo")
         backend.remove("baz")
-        await sleep(0.03)
+        await sleep(0.003)
         assert sorted(events.get()) == [("removed", "baz"), ("removed", "foo")]
 
         await end()
@@ -126,6 +126,74 @@ async def test_event_generator_suspension(backend, events):
             await tg.spawn(scenario, scope.cancel)
             async for event in scanner.events():
                 events.add((event.type.value, event.device))
+
+
+@mark.anyio
+async def test_added_device_generator(backend, events):
+    scanner = HotplugDetector(backend=backend)
+
+    async def scenario(end):
+        backend.add("foo")
+        await sleep(0.003)
+        assert events.get() == ["foo"]
+
+        backend.add("bar")
+        backend.add("bar")
+        backend.add("bar")
+        await sleep(0.003)
+        assert events.get() == ["bar"]
+
+        backend.remove("bar")
+        backend.add("baz")
+        await sleep(0.003)
+        assert events.get() == ["baz"]
+
+        backend.remove("foo")
+        backend.remove("baz")
+        await sleep(0.003)
+        assert events.get() == []
+
+        await end()
+
+    async with create_task_group() as tg:
+        async with open_cancel_scope() as scope:
+            await tg.spawn(scenario, scope.cancel)
+            async for device in scanner.added_devices():
+                events.add(device)
+
+
+@mark.anyio
+async def test_removed_device_generator(backend, events):
+    scanner = HotplugDetector(backend=backend)
+
+    async def scenario(end):
+        backend.add("foo")
+        await sleep(0.003)
+        assert events.get() == []
+
+        backend.add("bar")
+        backend.add("bar")
+        backend.add("bar")
+        await sleep(0.003)
+        assert events.get() == []
+
+        backend.remove("bar")
+        backend.add("baz")
+        await sleep(0.003)
+        assert events.get() == ["bar"]
+
+        backend.remove("foo")
+        backend.remove("baz")
+        await sleep(0.003)
+        assert sorted(events.get()) == ["baz", "foo"]
+
+        await end()
+
+    async with create_task_group() as tg:
+        async with open_cancel_scope() as scope:
+            await tg.spawn(scenario, scope.cancel)
+            async for device in scanner.removed_devices():
+                events.add(device)
 
 
 @mark.anyio
