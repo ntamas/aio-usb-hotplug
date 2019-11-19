@@ -218,23 +218,23 @@ async def test_run_for_each_device(backend):
 
     async def scenario(end):
         backend.add("foo")
-        await sleep(0.003)
+        await sleep(0.01)
         assert counters == {"foo": 1}
 
         backend.add("bar")
         backend.add("bar")
         backend.add("bar")
-        await sleep(0.003)
+        await sleep(0.01)
         assert counters == {"foo": 1, "bar": 1}
 
         backend.remove("bar")
         backend.add("baz")
-        await sleep(0.003)
+        await sleep(0.01)
         assert counters == {"foo": 1, "bar": 0, "baz": 1}
 
         backend.remove("foo")
         backend.remove("baz")
-        await sleep(0.003)
+        await sleep(0.01)
         assert counters == {"foo": 0, "bar": 0, "baz": 0}
 
         await end()
@@ -266,22 +266,22 @@ async def test_run_for_each_device_non_cancellable(backend):
         backend.add("bar")
         backend.add("bar")
         backend.add("bar")
-        await sleep(0.003)
+        await sleep(0.01)
         assert counters == {"foo": 1, "bar": 1}
 
         backend.remove("bar")
         backend.add("baz")
-        await sleep(0.003)
+        await sleep(0.01)
         assert counters == {"foo": 1, "bar": 1, "baz": 1}
 
         backend.remove("foo")
         backend.remove("baz")
-        await sleep(0.003)
+        await sleep(0.01)
         assert counters == {"foo": 1, "bar": 1, "baz": 1}
 
         await stopped.set()
 
-        await sleep(0.003)
+        await sleep(0.01)
         assert counters == {"foo": 0, "bar": 0, "baz": 0}
         await end()
 
