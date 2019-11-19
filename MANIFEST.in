@@ -1,0 +1,4 @@
+include README.md
+include requirements.txt
+include tox.ini
+include src/aio_usb_hotplug/py.typed
