@@ -7,8 +7,13 @@ from setuptools import setup, find_packages
 requires = [
     "anyio>=1.2.0",
     "async-generator>=1.10",
+    "pyusb>=1.0.2",
     "pyudev>=0.21.0; platform_system=='Linux'",
 ]
+
+extras_require = {
+    "dev": ["curio>=0.9", "pytest>=5.2.4", "pytest-cov>=2.0.1", "trio>=0.13.0"]
+}
 
 __version__ = None
 exec(open("src/aio_usb_hotplug/version.py").read())
@@ -25,6 +30,6 @@ setup(
     include_package_data=True,
     python_requires=">=3.5",
     install_requires=requires,
-    extras_require={},
+    extras_require=extras_require,
     test_suite="test",
 )
