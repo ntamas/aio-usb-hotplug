@@ -72,12 +72,12 @@ async def test_event_generator(backend, events):
         backend.remove("bar")
         backend.add("baz")
         await sleep(0.03)
-        assert events.get() == [("removed", "bar"), ("added", "baz")]
+        assert sorted(events.get()) == [("added", "baz"), ("removed", "bar")]
 
         backend.remove("foo")
         backend.remove("baz")
         await sleep(0.03)
-        assert events.get() == [("removed", "foo"), ("removed", "baz")]
+        assert sorted(events.get()) == [("removed", "baz"), ("removed", "foo")]
 
         await end()
 
