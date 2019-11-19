@@ -23,6 +23,7 @@ setup(
     version=__version__,
     author=u"Tam\u00e1s Nepusz",
     author_email="ntamas@gmail.com",
+    url="https://github.com/ntamas/aio-usb-hotplug",
     packages=find_packages("src"),
     package_data={"aio_usb_hotplug": ["py.typed"]},
     package_dir={"": "src"},
