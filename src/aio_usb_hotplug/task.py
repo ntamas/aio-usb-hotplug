@@ -90,7 +90,7 @@ class HotplugDetector:
         self._resume_event = None
 
     @async_generator
-    async def run(self) -> Iterator[HotplugEvent]:
+    async def events(self) -> Iterator[HotplugEvent]:
         """Runs the hotplug detection in an infinite loop, waiting between the
         given number of seconds between scans.
 

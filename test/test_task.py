@@ -84,7 +84,7 @@ async def test_event_generator(backend, events):
     async with create_task_group() as tg:
         async with open_cancel_scope() as scope:
             await tg.spawn(scenario, scope.cancel)
-            async for event in scanner.run():
+            async for event in scanner.events():
                 events.add((event.type.value, event.device))
 
 
@@ -124,7 +124,7 @@ async def test_event_generator_suspension(backend, events):
     async with create_task_group() as tg:
         async with open_cancel_scope() as scope:
             await tg.spawn(scenario, scope.cancel)
-            async for event in scanner.run():
+            async for event in scanner.events():
                 events.add((event.type.value, event.device))
 
 
@@ -133,7 +133,7 @@ async def test_vid_pid_transformation(backend):
     scanner = HotplugDetector.for_device(vid="0402", pid="0x0204", backend=backend)
 
     async with move_on_after(0.001):
-        async for event in scanner.run():
+        async for event in scanner.events():
             pass
 
     assert backend.params["idVendor"] == 0x0402
