@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 pytest = "*"
 trio = ">=0.13.0"
-curio = "*"
+curio = ">=0.9,<1.0"
 pytest-cov = "*"
 twine = "*"
 
