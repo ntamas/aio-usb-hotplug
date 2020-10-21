@@ -3,7 +3,7 @@
 `aio-usb-hotplug` is a Python library that provides asynchronous generators
 yielding detected hotplug events on the USB buses.
 
-Requires Python >= 3.5.
+Requires Python >= 3.7.
 
 Works with [`asyncio`](https://docs.python.org/3/library/asyncio.html),
 [`curio`](https://curio.readthedocs.io/en/latest/) and
