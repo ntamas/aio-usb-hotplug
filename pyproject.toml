@@ -14,7 +14,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.7"
 anyio = "^2.0.2"
-pyudev = { version = "^0.22.0", platform = "Linux" }
+pyudev = { version = "^0.22.0", platform = "linux" }
 pyusb = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
