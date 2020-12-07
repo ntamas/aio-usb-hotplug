@@ -2,13 +2,7 @@
 
 import usb.core
 
-from anyio import (
-    create_memory_object_stream,
-    move_on_after,
-    run_async_from_thread,
-    run_sync_in_worker_thread,
-    sleep,
-)
+from anyio import run_sync_in_worker_thread, sleep
 from typing import Any, Dict, List
 
 from .base import Device, USBBusScannerBackend
@@ -69,22 +63,17 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
         pyudev.
         """
         pyudev = self._pyudev
+
         monitor = pyudev.Monitor.from_netlink(pyudev.Context())
         monitor.filter_by(subsystem="usb")
 
-        send_queue, receive_queue = create_memory_object_stream()
+        def _wait_in_worker_thread():
+            # Wait for the first event
+            event = monitor.poll()
 
-        def _on_event(device):
-            run_async_from_thread(send_queue.send, "notify")
+            # Wait for subsequent events arriving close to each other so we don't
+            # trigger multiple scans until the USB bus settles down.
+            while event:
+                event = monitor.poll(timeout=0.5)
 
-        observer = pyudev.MonitorObserver(monitor, callback=_on_event)
-        observer.start()
-
-        # Wait for the first event
-        await receive_queue.receive()
-
-        # Wait for subsequent events arriving close to each other so we don't
-        # trigger multiple scans until the USB bus settles down.
-        while True:
-            async with move_on_after(0.5):
-                await receive_queue.receive()
+        await run_sync_in_worker_thread(_wait_in_worker_thread)
