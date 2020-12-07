@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aio-usb-hotplug"
-version = "2.0.1"
+version = "2.0.2"
 description = "Asynchronous generators yielding detected hotplug events on the USB buses"
 license = "MIT"
 readme = "README.md"
