@@ -24,6 +24,10 @@ class USBBusScannerBackend(metaclass=ABCMeta):
         """
         pass  # pragma: no cover
 
+    def is_supported(self) -> bool:
+        """Returns whether the backend is supported on the current platform."""
+        raise NotImplementedError  # pragma: no cover
+
     @abstractmethod
     def key_of(self, device: Device) -> str:
         """Returns a unique key for a USB device that can be used for identity

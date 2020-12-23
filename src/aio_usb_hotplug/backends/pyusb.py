@@ -1,7 +1,5 @@
 """PyUSB-based backend for aio_usb_hotplug."""
 
-import usb.core
-
 from anyio import run_sync_in_worker_thread, sleep
 from typing import Any, Dict, List
 
@@ -16,6 +14,13 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
         self._params = {}
 
         try:
+            import usb.core
+
+            self._usb_core = usb.core
+        except ImportError:
+            self._usb_core = None
+
+        try:
             import pyudev
 
             self._pyudev = pyudev
@@ -24,6 +29,25 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
 
     def configure(self, configuration: Dict[str, Any]) -> None:
         self._params = configuration
+
+    def is_supported(self) -> bool:
+        """Returns whether the backend is supported on the current platform."""
+        if self._usb_core is None:
+            return False
+
+        # _pyudev is optional so we don't check that
+
+        # This section is copied from the find() function of pyusb
+        import usb.backend.libusb1 as libusb1
+        import usb.backend.libusb0 as libusb0
+        import usb.backend.openusb as openusb
+
+        for m in (libusb1, openusb, libusb0):
+            backend = m.get_backend()
+            if backend is not None:
+                return True
+
+        return False
 
     def key_of(self, device: Device) -> str:
         """Returns a unique key for a USB device that can be used for identity
@@ -56,7 +80,7 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
         This function may block; make sure to call it on an appropriate worker
         thread only and not on the main event loop.
         """
-        return list(usb.core.find(find_all=True, **self._params))
+        return list(self._usb_core.find(find_all=True, **self._params))
 
     async def _wait_for_next_pyudev_hotplug_event(self):
         """Coroutine that waits for the next hotplug event on the USB bus using

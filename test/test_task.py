@@ -25,6 +25,9 @@ class MockBackend(USBBusScannerBackend):
     def configure(self, params):
         self.params = dict(params)
 
+    def is_supported(self) -> bool:
+        return True
+
     def key_of(self, device: str) -> str:
         return device
 
