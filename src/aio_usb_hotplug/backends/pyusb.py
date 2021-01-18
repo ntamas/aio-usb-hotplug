@@ -66,7 +66,7 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
         return key
 
     async def scan(self) -> List[Device]:
-        return await run_sync_in_worker_thread(self._find_devices)
+        return await run_sync_in_worker_thread(self._find_devices, cancellable=True)
 
     async def wait_until_next_scan(self) -> None:
         if self._pyudev:
@@ -100,4 +100,4 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
             while event:
                 event = monitor.poll(timeout=0.5)
 
-        await run_sync_in_worker_thread(_wait_in_worker_thread)
+        await run_sync_in_worker_thread(_wait_in_worker_thread, cancellable=True)
