@@ -80,17 +80,6 @@ toml = {version = "*", optional = true, markers = "extra == \"toml\""}
 toml = ["toml"]
 
 [[package]]
-name = "curio"
-version = "1.5"
-description = "Curio"
-category = "dev"
-optional = false
-python-versions = ">= 3.7"
-
-[package.extras]
-test = ["pytest", "sphinx"]
-
-[[package]]
 name = "idna"
 version = "3.1"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -319,7 +308,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "4247183018889af9c96a4b00b4256645dcbe0c69e860b550a4c5bde848960bb0"
+content-hash = "cd8718303601100ac4d47565148b2be73b0e34193875a3f98ad761372b1e1e5e"
 
 [metadata.files]
 anyio = [
@@ -433,9 +422,6 @@ coverage = [
     {file = "coverage-5.5-pp36-none-any.whl", hash = "sha256:f030f8873312a16414c0d8e1a1ddff2d3235655a2174e3648b4fa66b3f2f1079"},
     {file = "coverage-5.5-pp37-none-any.whl", hash = "sha256:2a3859cb82dcbda1cfd3e6f71c27081d18aa251d20a17d87d26d4cd216fb0af4"},
     {file = "coverage-5.5.tar.gz", hash = "sha256:ebe78fe9a0e874362175b02371bdfbee64d8edc42a044253ddf4ee7d3c15212c"},
-]
-curio = [
-    {file = "curio-1.5.tar.gz", hash = "sha256:af08212e590bb7da8e4cc39c42012711494dc20d622f162155ba296cc2e3bc10"},
 ]
 idna = [
     {file = "idna-3.1-py3-none-any.whl", hash = "sha256:5205d03e7bcbb919cc9c19885f9920d622ca52448306f2377daede5cf3faac16"},

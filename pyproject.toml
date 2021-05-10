@@ -21,7 +21,6 @@ pyusb = "^1.1.0"
 pytest = "^5.4.3"
 coverage = {extras = ["toml"], version = "^5.2"}
 pytest-cov = "^2.10.0"
-curio = "^1.4"
 trio = "^0.17.0"
 
 [tool.poetry.scripts]
