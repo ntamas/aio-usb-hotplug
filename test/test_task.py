@@ -103,7 +103,7 @@ async def test_event_generator_suspension(backend, events):
     scanner = HotplugDetector(backend=backend)
 
     async def scenario(end):
-        async with scanner.suspended():
+        with scanner.suspended():
             await sleep(0.003)
 
             backend.add("foo")
