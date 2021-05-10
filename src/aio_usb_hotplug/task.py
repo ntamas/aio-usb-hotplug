@@ -1,6 +1,6 @@
 """Hotplug detector for USB devices."""
 
-from anyio import create_event, create_task_group, open_cancel_scope
+from anyio import CancelScope, Event, create_task_group
 from async_generator import asynccontextmanager, async_generator, yield_
 from collections import namedtuple
 from enum import Enum
@@ -165,7 +165,7 @@ class HotplugDetector:
         """Resumes the hotplug detector task after a suspension."""
         self._suspended -= 1
         if not self._suspended and self._resume_event:
-            await self._resume_event.set()
+            self._resume_event.set()
 
     async def run_for_each_device(
         self,
@@ -195,7 +195,7 @@ class HotplugDetector:
                     """Wrapper for the task object that clears its cancel scope from the
                     resulting dictionary when the task terminates.
                     """
-                    async with open_cancel_scope() as scope:
+                    with CancelScope() as scope:
                         cancel_scopes_by_key[event.key] = scope
                         try:
                             await task(event.device)
@@ -217,17 +217,17 @@ class HotplugDetector:
             async for event in self.events():
                 if event.type == HotplugEventType.ADDED and predicate(event.device):
                     if event.key not in cancel_scopes_by_key:
-                        await tasks.spawn(_task_wrapper, event)
+                        tasks.start_soon(_task_wrapper, event)
                 elif event.type == HotplugEventType.REMOVED:
                     cancel_scope = cancel_scopes_by_key.get(event.key)
                     if cancel_scope:
-                        await cancel_scope.cancel()
+                        cancel_scope.cancel()
 
     def suspend(self) -> None:
         """Temporarily suspends the hotplug detector."""
         self._suspended += 1
         if self._suspended and not self._resume_event:
-            self._resume_event = create_event()
+            self._resume_event = Event()
 
     @asynccontextmanager
     @async_generator

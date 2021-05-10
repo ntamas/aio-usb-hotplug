@@ -1,9 +1,9 @@
 from aio_usb_hotplug import HotplugDetector
 from aio_usb_hotplug.backends.base import USBBusScannerBackend
 from anyio import (
-    create_event,
+    CancelScope,
+    Event,
     create_task_group,
-    open_cancel_scope,
     move_on_after,
     sleep,
 )
@@ -89,11 +89,11 @@ async def test_event_generator(backend, events):
         await sleep(0.003)
         assert sorted(events.get()) == [("removed", "baz"), ("removed", "foo")]
 
-        await end()
+        end()
 
     async with create_task_group() as tg:
-        async with open_cancel_scope() as scope:
-            await tg.spawn(scenario, scope.cancel)
+        with CancelScope() as scope:
+            tg.start_soon(scenario, scope.cancel)
             async for event in scanner.events():
                 events.add((event.type.value, event.device))
 
@@ -129,11 +129,11 @@ async def test_event_generator_suspension(backend, events):
         await sleep(0.003)
         assert sorted(events.get()) == [("removed", "baz"), ("removed", "foo")]
 
-        await end()
+        end()
 
     async with create_task_group() as tg:
-        async with open_cancel_scope() as scope:
-            await tg.spawn(scenario, scope.cancel)
+        with CancelScope() as scope:
+            tg.start_soon(scenario, scope.cancel)
             async for event in scanner.events():
                 events.add((event.type.value, event.device))
 
@@ -163,11 +163,11 @@ async def test_added_device_generator(backend, events):
         await sleep(0.003)
         assert events.get() == []
 
-        await end()
+        end()
 
     async with create_task_group() as tg:
-        async with open_cancel_scope() as scope:
-            await tg.spawn(scenario, scope.cancel)
+        with CancelScope() as scope:
+            tg.start_soon(scenario, scope.cancel)
             async for device in scanner.added_devices():
                 events.add(device)
 
@@ -197,11 +197,11 @@ async def test_removed_device_generator(backend, events):
         await sleep(0.003)
         assert sorted(events.get()) == ["baz", "foo"]
 
-        await end()
+        end()
 
     async with create_task_group() as tg:
-        async with open_cancel_scope() as scope:
-            await tg.spawn(scenario, scope.cancel)
+        with CancelScope() as scope:
+            tg.start_soon(scenario, scope.cancel)
             async for device in scanner.removed_devices():
                 events.add(device)
 
@@ -240,11 +240,11 @@ async def test_run_for_each_device(backend):
         await sleep(0.01)
         assert counters == {"foo": 0, "bar": 0, "baz": 0}
 
-        await end()
+        end()
 
     async with create_task_group() as tg:
-        async with open_cancel_scope() as scope:
-            await tg.spawn(scenario, scope.cancel)
+        with CancelScope() as scope:
+            tg.start_soon(scenario, scope.cancel)
             await scanner.run_for_each_device(handler)
 
 
@@ -252,7 +252,7 @@ async def test_run_for_each_device(backend):
 async def test_run_for_each_device_non_cancellable(backend):
     scanner = HotplugDetector(backend=backend)
     counters = defaultdict(int)
-    stopped = create_event()
+    stopped = Event()
 
     async def handler(device):
         counters[device] += 1
@@ -282,15 +282,15 @@ async def test_run_for_each_device_non_cancellable(backend):
         await sleep(0.01)
         assert counters == {"foo": 1, "bar": 1, "baz": 1}
 
-        await stopped.set()
+        stopped.set()
 
         await sleep(0.01)
         assert counters == {"foo": 0, "bar": 0, "baz": 0}
-        await end()
+        end()
 
     async with create_task_group() as tg:
-        async with open_cancel_scope() as scope:
-            await tg.spawn(scenario, scope.cancel)
+        with CancelScope() as scope:
+            tg.start_soon(scenario, scope.cancel)
             await scanner.run_for_each_device(handler, cancellable=False)
 
 
@@ -298,7 +298,7 @@ async def test_run_for_each_device_non_cancellable(backend):
 async def test_vid_pid_transformation(backend):
     scanner = HotplugDetector.for_device(vid="0402", pid="0x0204", backend=backend)
 
-    async with move_on_after(0.001):
+    with move_on_after(0.001):
         async for event in scanner.events():
             pass
 

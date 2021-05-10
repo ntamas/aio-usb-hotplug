@@ -1,6 +1,6 @@
 """PyUSB-based backend for aio_usb_hotplug."""
 
-from anyio import run_sync_in_worker_thread, sleep
+from anyio import sleep, to_thread
 from typing import Any, Dict, List
 
 from .base import Device, USBBusScannerBackend
@@ -66,7 +66,7 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
         return key
 
     async def scan(self) -> List[Device]:
-        return await run_sync_in_worker_thread(self._find_devices, cancellable=True)
+        return await to_thread.run_sync(self._find_devices, cancellable=True)
 
     async def wait_until_next_scan(self) -> None:
         if self._pyudev:
@@ -100,4 +100,4 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
             while event:
                 event = monitor.poll(timeout=0.5)
 
-        await run_sync_in_worker_thread(_wait_in_worker_thread, cancellable=True)
+        await to_thread.run_sync(_wait_in_worker_thread, cancellable=True)
