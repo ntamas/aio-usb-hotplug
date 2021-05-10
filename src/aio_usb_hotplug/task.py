@@ -1,8 +1,9 @@
 """Hotplug detector for USB devices."""
 
 from anyio import CancelScope, Event, create_task_group
-from async_generator import asynccontextmanager, async_generator, yield_
+from async_generator import async_generator, yield_
 from collections import namedtuple
+from contextlib import contextmanager
 from enum import Enum
 from typing import Callable, Coroutine, Dict, Iterator, Optional, Union
 
@@ -229,15 +230,14 @@ class HotplugDetector:
         if self._suspended and not self._resume_event:
             self._resume_event = Event()
 
-    @asynccontextmanager
-    @async_generator
-    async def suspended(self) -> None:
+    @contextmanager
+    def suspended(self) -> None:
         """Async context manager that suspends the hotplug detector while the
         execution is in the context.
         """
         self.suspend()
         try:
-            await yield_()
+            yield
         finally:
             self.resume()
 
