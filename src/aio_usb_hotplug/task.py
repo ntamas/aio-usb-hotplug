@@ -161,7 +161,7 @@ class HotplugDetector:
             if event.type == HotplugEventType.REMOVED:
                 await yield_(event.device)
 
-    async def resume(self) -> None:
+    def resume(self) -> None:
         """Resumes the hotplug detector task after a suspension."""
         self._suspended -= 1
         if not self._suspended and self._resume_event:
@@ -239,7 +239,7 @@ class HotplugDetector:
         try:
             await yield_()
         finally:
-            await self.resume()
+            self.resume()
 
     @staticmethod
     def _preprocess_params(params: Dict) -> Dict:
