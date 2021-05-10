@@ -1,4 +1,4 @@
-__all__ = ("NoBackendError", )
+__all__ = ("NoBackendError",)
 
 
 class NoBackendError(RuntimeError):

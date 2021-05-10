@@ -2,7 +2,7 @@ from .base import USBBusScannerBackend
 
 from ..errors import NoBackendError
 
-__all__ = ("choose_backend", )
+__all__ = ("choose_backend",)
 
 
 def choose_backend(allow_dummy: bool = False) -> USBBusScannerBackend:
