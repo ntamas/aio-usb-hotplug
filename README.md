@@ -5,9 +5,8 @@ yielding detected hotplug events on the USB buses.
 
 Requires Python >= 3.7.
 
-Works with [`asyncio`](https://docs.python.org/3/library/asyncio.html),
-[`curio`](https://curio.readthedocs.io/en/latest/) and
-[`trio`](https://trio.readthedocs.io/en/stable/).
+Works with [`asyncio`](https://docs.python.org/3/library/asyncio.html)
+and [`trio`](https://trio.readthedocs.io/en/stable/).
 
 ## Installation
 
@@ -24,7 +23,7 @@ pip install aio-usb-hotplug
 
 ```python
 from aio_usb_hotplug import HotplugDetector
-from trio import run  # ...or asyncio, or curio
+from trio import run  # ...or asyncio
 
 async def dump_events():
     detector = HotplugDetector.for_device(vid="1050", pid="0407")
