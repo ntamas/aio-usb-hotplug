@@ -14,11 +14,11 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.7"
 anyio = "^3.0.0"
-pyudev = { version = "^0.22.0", platform = "linux" }
+pyudev = { version = ">=0.22.0", platform = "linux" }
 pyusb = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.4.3"
+pytest = "^6.2.5"
 coverage = {extras = ["toml"], version = "^5.2"}
 pytest-cov = "^2.10.0"
 trio = "^0.17.0"
