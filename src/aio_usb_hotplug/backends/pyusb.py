@@ -9,9 +9,10 @@ from .base import Device, USBBusScannerBackend
 class PyUSBBusScannerBackend(USBBusScannerBackend):
     """PyUSB-based USB bus scanner implementation."""
 
-    def __init__(self):
+    def __init__(self, use_libusb_package: bool = False):
         """Constructor."""
         self._params = {}
+        self._use_libusb_package = bool(use_libusb_package)
 
         try:
             import usb.core
@@ -21,7 +22,7 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
             self._usb_core = None
 
         try:
-            import pyudev
+            import pyudev  # type: ignore
 
             self._pyudev = pyudev
         except ImportError:
@@ -37,15 +38,29 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
 
         # _pyudev is optional so we don't check that
 
-        # This section is copied from the find() function of pyusb
-        import usb.backend.libusb1 as libusb1
-        import usb.backend.libusb0 as libusb0
-        import usb.backend.openusb as openusb
+        if self._use_libusb_package:
+            # We attempt to use libusb_package only
+            import usb.backend.libusb1 as libusb1
 
-        for m in (libusb1, openusb, libusb0):
-            backend = m.get_backend()
+            try:
+                from libusb_package import find_library  # type: ignore
+            except ImportError:
+                return False
+
+            backend = libusb1.get_backend(find_library=find_library)
             if backend is not None:
                 return True
+
+        else:
+            # This section is copied from the find() function of pyusb
+            import usb.backend.libusb1 as libusb1
+            import usb.backend.libusb0 as libusb0
+            import usb.backend.openusb as openusb
+
+            for m in (libusb1, openusb, libusb0):
+                backend = m.get_backend()
+                if backend is not None:
+                    return True
 
         return False
 
@@ -80,7 +95,7 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
         This function may block; make sure to call it on an appropriate worker
         thread only and not on the main event loop.
         """
-        return list(self._usb_core.find(find_all=True, **self._params))
+        return list(self._usb_core.find(find_all=True, **self._params))  # type: ignore
 
     async def _wait_for_next_pyudev_hotplug_event(self):
         """Coroutine that waits for the next hotplug event on the USB bus using
@@ -88,7 +103,7 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
         """
         pyudev = self._pyudev
 
-        monitor = pyudev.Monitor.from_netlink(pyudev.Context())
+        monitor = pyudev.Monitor.from_netlink(pyudev.Context())  # type: ignore
         monitor.filter_by(subsystem="usb")
 
         def _wait_in_worker_thread():

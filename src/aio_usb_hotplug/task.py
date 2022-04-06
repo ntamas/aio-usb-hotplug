@@ -1,11 +1,10 @@
 """Hotplug detector for USB devices."""
 
 from anyio import CancelScope, Event, create_task_group
-from async_generator import async_generator, yield_
-from collections import namedtuple
 from contextlib import contextmanager
+from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Coroutine, Dict, Iterator, Optional, Union
+from typing import AsyncIterator, Callable, Coroutine, Dict, Iterator, Optional, Union
 
 from .backends.base import Device, USBBusScannerBackend
 from .backends.autodetect import choose_backend
@@ -38,7 +37,18 @@ class HotplugEventType(Enum):
     REMOVED = "removed"
 
 
-HotplugEvent = namedtuple("HotplugEvent", "type device key")
+@dataclass(frozen=True)
+class HotplugEvent:
+    """Simple dataclass representing a hotplug event"""
+
+    type: HotplugEventType
+    """The type of the event."""
+
+    device: Device
+    """The device affected by the event."""
+
+    key: str
+    """Unique key associated to the device."""
 
 
 class HotplugDetector:
@@ -48,6 +58,24 @@ class HotplugDetector:
     set of USB attributes, and dispatches events when devices are discovered
     or removed.
     """
+
+    _active: Dict[str, Device]
+    """Mapping from keys of active USB devices to the corresponding device objects."""
+
+    _backend: Callable[[], USBBusScannerBackend]
+    """Factory that can be called with no arguments to retrueve the USB bus scanner
+    backend that we use.
+    """
+
+    _params: dict
+    """Parameters passed to the ``configure()`` method of the backend when it is
+    constructed.
+    """
+
+    _resume_event: Optional[Event]
+
+    _suspended: int
+    """Number of times this task was suspended without resuming it."""
 
     @classmethod
     def for_device(cls, vid: Union[str, int], pid: Union[str, int], *args, **kwds):
@@ -70,7 +98,7 @@ class HotplugDetector:
         self,
         params: Optional[Dict] = None,
         *,
-        backend: Callable[[None], USBBusScannerBackend] = choose_backend
+        backend: Callable[[], USBBusScannerBackend] = choose_backend
     ):
         """Constructor.
 
@@ -90,8 +118,7 @@ class HotplugDetector:
         self._suspended = 0
         self._resume_event = None
 
-    @async_generator
-    async def added_devices(self) -> Iterator[HotplugEvent]:
+    async def added_devices(self) -> AsyncIterator[HotplugEvent]:
         """Runs the hotplug detection in an asynchronous task.
 
         Yields:
@@ -100,10 +127,9 @@ class HotplugDetector:
         """
         async for event in self.events():
             if event.type == HotplugEventType.ADDED:
-                await yield_(event.device)
+                yield event.device
 
-    @async_generator
-    async def events(self) -> Iterator[HotplugEvent]:
+    async def events(self) -> AsyncIterator[HotplugEvent]:
         """Runs the hotplug detection in an asynchronous task.
 
         Yields:
@@ -115,7 +141,7 @@ class HotplugDetector:
         key_of = backend.key_of
 
         while True:
-            if self._suspended:
+            if self._suspended and self._resume_event:
                 await self._resume_event.wait()
 
             devices = await backend.scan()
@@ -139,19 +165,18 @@ class HotplugDetector:
                 event = HotplugEvent(
                     type=HotplugEventType.REMOVED, device=device, key=key
                 )
-                await yield_(event)
+                yield event
 
             for device in added.values():
                 key = key_of(device)
                 event = HotplugEvent(
                     type=HotplugEventType.ADDED, device=device, key=key
                 )
-                await yield_(event)
+                yield event
 
             await backend.wait_until_next_scan()
 
-    @async_generator
-    async def removed_devices(self) -> Iterator[HotplugEvent]:
+    async def removed_devices(self) -> AsyncIterator[HotplugEvent]:
         """Runs the hotplug detection in an asynchronous task.
 
         Yields:
@@ -160,7 +185,7 @@ class HotplugDetector:
         """
         async for event in self.events():
             if event.type == HotplugEventType.REMOVED:
-                await yield_(event.device)
+                yield event.device
 
     def resume(self) -> None:
         """Resumes the hotplug detector task after a suspension."""
@@ -231,7 +256,7 @@ class HotplugDetector:
             self._resume_event = Event()
 
     @contextmanager
-    def suspended(self) -> None:
+    def suspended(self) -> Iterator[None]:
         """Async context manager that suspends the hotplug detector while the
         execution is in the context.
         """

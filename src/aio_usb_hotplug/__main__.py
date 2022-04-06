@@ -1,6 +1,6 @@
 from .task import HotplugDetector
 
-from trio import run
+from anyio import run
 
 
 async def main():
