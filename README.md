@@ -17,6 +17,21 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install
 pip install aio-usb-hotplug
 ```
 
+`aio-usb-hotplug` depends on [PyUSB](https://pypi.org/pypi/pyusb), which
+in turn requires [libusb](https://libusb.info) or
+[openusb](https://sourceforge.net/projects/openusb/). An easy way to satisfy
+this requirement is to install
+[libusb-package](https://pypi.org/pypi/libusb-package), which supplies
+pre-compiled binaries for most platforms:
+
+```bash
+pip install libusb-package
+```
+
+`aio-usb-hotplug` will make use of
+[libusb-package](https://pypi.org/pypi/libusb-package) if it is installed in
+the current Python environment.
+
 ## Usage
 
 ### Dump all hotplug events related to a specific USB device
