@@ -7,12 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.0.0] - 2022-04-07
 
-### Changed
+### Breaking changes
 
 - `HotplugEvent` is now a Python dataclass, not a `namedtuple`.
 
+- Dropped support for Python 3.6 and older.
+
+### Changed
+
 - `libusb-package` is now detected automatically and this library will use the
   bundled `libusb` version when `libusb-package` is available.
+
+- Improved typing.
 
 ## [4.0.1] - 2021-10-08
 
