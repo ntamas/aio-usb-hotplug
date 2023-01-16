@@ -18,9 +18,9 @@ pyudev = { version = ">=0.22.0", platform = "linux" }
 pyusb = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.5"
+pytest = "^7.2.0"
 coverage = {extras = ["toml"], version = "^6.0"}
-pytest-cov = "^3.0.0"
+pytest-cov = "^4.0.0"
 trio = "^0.19.0"
 
 [tool.poetry.scripts]
