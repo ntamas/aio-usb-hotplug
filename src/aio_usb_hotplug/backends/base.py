@@ -11,7 +11,7 @@ Device = Any
 class USBBusScannerBackend(metaclass=ABCMeta):
     """Interface specification for USB bus scanner backends."""
 
-    def configure(self, configuration: Dict[str, Any]) -> None:
+    def configure(self, configuration: Dict[str, Any]) -> None:  # noqa: B027
         """Configures the scanner backend and specifies which devices the
         backend should report.
 

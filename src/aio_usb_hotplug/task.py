@@ -149,7 +149,7 @@ class HotplugDetector:
             added = {}
             seen = set()
 
-            for index, device in enumerate(devices):
+            for _index, device in enumerate(devices):
                 key = key_of(device)
                 if key in self._active:
                     seen.add(key)

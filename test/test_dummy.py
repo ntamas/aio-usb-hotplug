@@ -26,4 +26,4 @@ async def test_dummy_scan(backend):
 async def test_wait_until_next_scan(backend):
     with move_on_after(0.01):
         await backend.wait_until_next_scan()
-        assert False, "wait_until_next_scan() should not have returned"
+        raise AssertionError("wait_until_next_scan() should not have returned")

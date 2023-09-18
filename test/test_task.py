@@ -299,7 +299,7 @@ async def test_vid_pid_transformation(backend):
     scanner = HotplugDetector.for_device(vid="0402", pid="0x0204", backend=backend)
 
     with move_on_after(0.001):
-        async for event in scanner.events():
+        async for _event in scanner.events():
             pass
 
     assert backend.params["idVendor"] == 0x0402

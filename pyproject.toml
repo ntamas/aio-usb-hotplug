@@ -7,9 +7,7 @@ readme = "README.md"
 homepage = "https://github.com/ntamas/aio-usb-hotplug/"
 repository = "https://github.com/ntamas/aio-usb-hotplug/"
 authors = ["Tamas Nepusz <tamas@collmot.com>"]
-packages = [
-    { include = "aio_usb_hotplug", from = "src" }
-]
+packages = [{ include = "aio_usb_hotplug", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -19,7 +17,7 @@ pyusb = "^1.2.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
-coverage = {extras = ["toml"], version = "^7.2.7"}
+coverage = { extras = ["toml"], version = "^7.2.7" }
 pytest-cov = "^4.1.0"
 trio = ">=0.22.0"
 
@@ -35,6 +33,11 @@ source = ["src"]
 [tool.coverage.report]
 show_missing = true
 
+[tool.ruff]
+ignore = ["B905", "C901", "E402", "E501"]
+line-length = 80
+select = ["B", "C", "E", "F", "W"]
+
 [build-system]
-requires = ["poetry>=0.12"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.masonry.api"
