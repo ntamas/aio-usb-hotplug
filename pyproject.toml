@@ -1,27 +1,37 @@
-[tool.poetry]
+[project]
 name = "aio-usb-hotplug"
 version = "6.0.0"
 description = "Asynchronous generators yielding detected hotplug events on the USB buses"
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/ntamas/aio-usb-hotplug/"
-repository = "https://github.com/ntamas/aio-usb-hotplug/"
-authors = ["Tamas Nepusz <tamas@collmot.com>"]
-packages = [{ include = "aio_usb_hotplug", from = "src" }]
+authors = [{ name = "Tamas Nepusz", email = "tamas@collmot.com" }]
+requires-python = ">=3.9"
+dependencies = [
+  "anyio (>=4.9.0)",
+  'pyudev (>=0.24.3) ; sys_platform == "linux"',
+  "pyusb (>=1.3.1)",
+]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-anyio = ">=3.7.1,<5"
-pyudev = { version = ">=0.24.1", platform = "linux" }
-pyusb = "^1.2.1"
+[project.urls]
+Homepage = "https://github.com/ntamas/aio-usb-hotplug/"
+Repository = "https://github.com/ntamas/aio-usb-hotplug/"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.4.0"
-coverage = { extras = ["toml"], version = "^7.2.7" }
-pytest-cov = "^4.1.0"
-trio = ">=0.22.0"
+[dependency-groups]
+dev = [
+  "pytest (>=8.4.1)",
+  "coverage[toml] (>=7.9.1)",
+  "pytest-cov (>=6.2.1)",
+  "trio>=0.30.0",
+]
 
-[tool.poetry.scripts]
+[tool.hatch.envs.hatch-test]
+extra-dependencies = ["trio"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aio_usb_hotplug"]
 
 [tool.coverage.paths]
 source = ["src"]
@@ -34,10 +44,9 @@ source = ["src"]
 show_missing = true
 
 [tool.ruff]
-ignore = ["B905", "C901", "E402", "E501"]
-line-length = 80
-select = ["B", "C", "E", "F", "W"]
+lint.ignore = ["B905", "E402", "E501"]
+lint.select = ["B", "C", "E", "F", "W"]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
