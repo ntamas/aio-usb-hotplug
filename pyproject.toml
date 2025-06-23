@@ -25,7 +25,7 @@ dev = [
 ]
 
 [tool.hatch.envs.hatch-test]
-extra-dependencies = ["trio"]
+extra-dependencies = ["libusb-package", "trio"]
 
 [tool.hatch.build.targets.sdist]
 include = ["src"]
