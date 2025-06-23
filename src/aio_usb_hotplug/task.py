@@ -98,7 +98,7 @@ class HotplugDetector:
         self,
         params: Optional[Dict] = None,
         *,
-        backend: Callable[[], USBBusScannerBackend] = choose_backend
+        backend: Callable[[], USBBusScannerBackend] = choose_backend,
     ):
         """Constructor.
 
@@ -198,7 +198,7 @@ class HotplugDetector:
         task: Callable[[Device], Coroutine],
         *,
         predicate: Optional[Callable[[Device], bool]] = None,
-        cancellable: bool = True
+        cancellable: bool = True,
     ) -> None:
         """Runs a background task that listens for hotplug events and runs an
         asynchronous task for each device that was added to the USB bus.
