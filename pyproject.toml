@@ -3,6 +3,7 @@ name = "aio-usb-hotplug"
 version = "7.0.0"
 description = "Asynchronous generators yielding detected hotplug events on the USB buses"
 license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.md"
 authors = [{ name = "Tamas Nepusz", email = "tamas@collmot.com" }]
 requires-python = ">=3.9"
@@ -27,12 +28,6 @@ dev = [
 [tool.hatch.envs.hatch-test]
 extra-dependencies = ["libusb-package", "trio"]
 
-[tool.hatch.build.targets.sdist]
-include = ["src"]
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/aio_usb_hotplug"]
-
 [tool.coverage.paths]
 source = ["src"]
 
@@ -48,5 +43,5 @@ lint.ignore = ["B905", "E402", "E501"]
 lint.select = ["B", "C", "E", "F", "W"]
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.7.18,<0.8"]
+build-backend = "uv_build"
