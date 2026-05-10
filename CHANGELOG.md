@@ -14,15 +14,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [7.0.0] - 2025-06-24
 
-### Breaking changes
+### Breaking change
 
 - Dropped support for Python 3.8.
 
+### Miscellaneous
+
+- Replaced `poetry` with `uv` and `hatch` in the build system.
+
 ## [6.0.0] - 2023-09-18
 
-### Breaking changes
+### Breaking change
 
 - Dropped support for Python 3.7.
+
+### Changed
+
+- Allow AnyIO 4 in dependencies.
 
 ## [5.2.0] - 2023-01-16
 
