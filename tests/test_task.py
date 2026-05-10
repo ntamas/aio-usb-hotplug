@@ -1,5 +1,6 @@
-from aio_usb_hotplug import HotplugDetector
-from aio_usb_hotplug.backends.base import USBBusScannerBackend
+from collections import defaultdict
+from typing import List
+
 from anyio import (
     CancelScope,
     Event,
@@ -7,9 +8,10 @@ from anyio import (
     move_on_after,
     sleep,
 )
-from collections import defaultdict
 from pytest import fixture, mark
-from typing import List
+
+from aio_usb_hotplug import HotplugDetector
+from aio_usb_hotplug.backends.base import USBBusScannerBackend
 
 
 class MockBackend(USBBusScannerBackend):
@@ -22,8 +24,8 @@ class MockBackend(USBBusScannerBackend):
     def add(self, device: str) -> None:
         self._devices.add(device)
 
-    def configure(self, params):
-        self.params = dict(params)
+    def configure(self, configuration):
+        self.params = dict(configuration)
 
     def is_supported(self) -> bool:
         return True
