@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.0.1] - 2026-05-10
+
+### Fixed
+
+- `added_devices()`, `removed_devices()` and `events()` are now typed to return
+  an `AsyncGenerator` so they can be used with `aclosing()`.
+
+## [7.0.0] - 2025-06-24
+
+### Breaking changes
+
+- Dropped support for Python 3.8.
+
+## [6.0.0] - 2023-09-18
+
+### Breaking changes
+
+- Dropped support for Python 3.7.
+
 ## [5.2.0] - 2023-01-16
 
 ### Added
