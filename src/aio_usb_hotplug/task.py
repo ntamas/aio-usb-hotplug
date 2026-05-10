@@ -1,14 +1,22 @@
 """Hotplug detector for USB devices."""
 
-from anyio import CancelScope, Event, create_task_group
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
-from typing import AsyncIterator, Callable, Coroutine, Dict, Iterator, Optional, Union
+from typing import (
+    AsyncGenerator,
+    Callable,
+    Coroutine,
+    Dict,
+    Iterator,
+    Optional,
+    Union,
+)
 
-from .backends.base import Device, USBBusScannerBackend
+from anyio import CancelScope, Event, create_task_group
+
 from .backends.autodetect import choose_backend
-
+from .backends.base import Device, USBBusScannerBackend
 
 __all__ = ("HotplugDetector",)
 
@@ -118,7 +126,7 @@ class HotplugDetector:
         self._suspended = 0
         self._resume_event = None
 
-    async def added_devices(self) -> AsyncIterator[HotplugEvent]:
+    async def added_devices(self) -> AsyncGenerator[HotplugEvent, None]:
         """Runs the hotplug detection in an asynchronous task.
 
         Yields:
@@ -129,7 +137,7 @@ class HotplugDetector:
             if event.type == HotplugEventType.ADDED:
                 yield event.device
 
-    async def events(self) -> AsyncIterator[HotplugEvent]:
+    async def events(self) -> AsyncGenerator[HotplugEvent, None]:
         """Runs the hotplug detection in an asynchronous task.
 
         Yields:
@@ -176,7 +184,7 @@ class HotplugDetector:
 
             await backend.wait_until_next_scan()
 
-    async def removed_devices(self) -> AsyncIterator[HotplugEvent]:
+    async def removed_devices(self) -> AsyncGenerator[HotplugEvent, None]:
         """Runs the hotplug detection in an asynchronous task.
 
         Yields:
