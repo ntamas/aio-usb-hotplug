@@ -3,15 +3,7 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
-from typing import (
-    AsyncGenerator,
-    Callable,
-    Coroutine,
-    Dict,
-    Iterator,
-    Optional,
-    Union,
-)
+from collections.abc import AsyncGenerator, Callable, Coroutine, Iterator
 
 from anyio import CancelScope, Event, create_task_group
 
@@ -21,7 +13,7 @@ from .backends.base import Device, USBBusScannerBackend
 __all__ = ("HotplugDetector",)
 
 
-def _to_int(value: Union[str, int]) -> int:
+def _to_int(value: str | int) -> int:
     """Converts a vendor or product ID, specified either in hexadecimal notation
     as a string, or in decimal notation as an integer, to its integer
     representation.
@@ -67,7 +59,7 @@ class HotplugDetector:
     or removed.
     """
 
-    _active: Dict[str, Device]
+    _active: dict[str, Device]
     """Mapping from keys of active USB devices to the corresponding device objects."""
 
     _backend: Callable[[], USBBusScannerBackend]
@@ -80,13 +72,13 @@ class HotplugDetector:
     constructed.
     """
 
-    _resume_event: Optional[Event]
+    _resume_event: Event | None
 
     _suspended: int
     """Number of times this task was suspended without resuming it."""
 
     @classmethod
-    def for_device(cls, vid: Union[str, int], pid: Union[str, int], *args, **kwds):
+    def for_device(cls, vid: str | int, pid: str | int, *args, **kwds):
         """Shortcut method to create a HotplugDetector_ for devices matching
         a single VID:PID combination.
 
@@ -104,7 +96,7 @@ class HotplugDetector:
 
     def __init__(
         self,
-        params: Optional[Dict] = None,
+        params: dict | None = None,
         *,
         backend: Callable[[], USBBusScannerBackend] = choose_backend,
     ):
@@ -205,7 +197,7 @@ class HotplugDetector:
         self,
         task: Callable[[Device], Coroutine],
         *,
-        predicate: Optional[Callable[[Device], bool]] = None,
+        predicate: Callable[[Device], bool] | None = None,
         cancellable: bool = True,
     ) -> None:
         """Runs a background task that listens for hotplug events and runs an
@@ -275,7 +267,7 @@ class HotplugDetector:
             self.resume()
 
     @staticmethod
-    def _preprocess_params(params: Dict) -> Dict:
+    def _preprocess_params(params: dict) -> dict:
         """Preprocesses the parameters passed to the constructor, remapping
         the following commonly used aliases to identifiers used by `pyusb`:
 

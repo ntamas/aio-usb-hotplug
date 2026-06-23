@@ -1,5 +1,4 @@
 from collections import defaultdict
-from typing import List
 
 from anyio import (
     CancelScope,
@@ -36,7 +35,7 @@ class MockBackend(USBBusScannerBackend):
     def remove(self, device: str) -> None:
         self._devices.remove(device)
 
-    async def scan(self) -> List[str]:
+    async def scan(self) -> list[str]:
         await sleep(0.001)
         return sorted(self._devices)
 

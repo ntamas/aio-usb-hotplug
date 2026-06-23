@@ -1,7 +1,7 @@
 """Interface specification for USB bus scanner backends."""
 
 from abc import abstractmethod, ABCMeta
-from typing import Any, Dict, List
+from typing import Any
 
 __all__ = ("Device", "USBBusScannerBackend")
 
@@ -11,7 +11,7 @@ Device = Any
 class USBBusScannerBackend(metaclass=ABCMeta):
     """Interface specification for USB bus scanner backends."""
 
-    def configure(self, configuration: Dict[str, Any]) -> None:  # noqa: B027
+    def configure(self, configuration: dict[str, Any]) -> None:  # noqa: B027
         """Configures the scanner backend and specifies which devices the
         backend should report.
 
@@ -40,7 +40,7 @@ class USBBusScannerBackend(metaclass=ABCMeta):
         raise NotImplementedError  # pragma: no cover
 
     @abstractmethod
-    async def scan(self) -> List[Device]:
+    async def scan(self) -> list[Device]:
         """Scans the system for USB devices and returns the list of devices
         found.
 

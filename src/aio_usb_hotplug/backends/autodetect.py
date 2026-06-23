@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Callable, List
+from collections.abc import Callable
 
 from .base import USBBusScannerBackend
 
@@ -31,7 +31,7 @@ def choose_backend(
     from .dummy import DummyUSBBusScannerBackend
     from .pyusb import PyUSBBusScannerBackend
 
-    backends: List[Callable[[], USBBusScannerBackend]] = [PyUSBBusScannerBackend]
+    backends: list[Callable[[], USBBusScannerBackend]] = [PyUSBBusScannerBackend]
 
     if allow_libusb_package:
         backends.insert(0, partial(PyUSBBusScannerBackend, use_libusb_package=True))

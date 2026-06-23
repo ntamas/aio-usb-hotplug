@@ -1,7 +1,7 @@
 """PyUSB-based backend for aio_usb_hotplug."""
 
 from anyio import sleep, to_thread
-from typing import Any, Dict, List
+from typing import Any
 
 from .base import Device, USBBusScannerBackend
 
@@ -28,7 +28,7 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
         except ImportError:
             self._pyudev = None
 
-    def configure(self, configuration: Dict[str, Any]) -> None:
+    def configure(self, configuration: dict[str, Any]) -> None:
         self._params = configuration
 
     def is_supported(self) -> bool:
@@ -80,7 +80,7 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
 
         return key
 
-    async def scan(self) -> List[Device]:
+    async def scan(self) -> list[Device]:
         return await to_thread.run_sync(self._find_devices, cancellable=True)
 
     async def wait_until_next_scan(self) -> None:
@@ -89,7 +89,7 @@ class PyUSBBusScannerBackend(USBBusScannerBackend):
         else:
             await sleep(1)
 
-    def _find_devices(self) -> List[Device]:
+    def _find_devices(self) -> list[Device]:
         """Scans the USB bus for all the devices that we are interested in.
 
         This function may block; make sure to call it on an appropriate worker
